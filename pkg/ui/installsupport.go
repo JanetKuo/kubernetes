@@ -20,12 +20,13 @@ import (
 	"mime"
 	"net/http"
 
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/ui/data/swagger"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 )
 
-const dashboardPath = "/api/v1/proxy/namespaces/default/services/kube-ui/#/dashboard/"
+const dashboardPath = "/api/v1/proxy/namespaces/" + api.NamespaceSystem + "/services/kube-ui/#/dashboard/"
 
 type MuxInterface interface {
 	Handle(pattern string, handler http.Handler)

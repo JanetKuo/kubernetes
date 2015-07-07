@@ -1,8 +1,8 @@
 # Kubernetes User Interface
-Kubernetes has an extensible user interface with default functionality that describes the current cluster. It is accessible via `https://<kubernetes-master>/ui`, which redirects to `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kube-ui/#/dashboard/`.
+Kubernetes has an extensible user interface with default functionality that describes the current cluster. It is accessible via `https://<kubernetes-master>/ui`, which redirects to `https://<kubernetes-master>/api/v1/proxy/namespaces/kube-system/services/kube-ui/#/dashboard/`.
 
 ## Running the UI
-The UI is run by default as a [cluster addon](../cluster/addons/README.md) through the [kube-ui](../cluster/addons/kube-ui) service. It is accessible via `https://<kubernetes-master>/ui`, which redirects to `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kube-ui/#/dashboard/`.
+The UI is run by default as a [cluster addon](../cluster/addons/README.md) through the [kube-ui](../cluster/addons/kube-ui) service. It is accessible via `https://<kubernetes-master>/ui`, which redirects to `https://<kubernetes-master>/api/v1/proxy/namespaces/kube-system/services/kube-ui/#/dashboard/`.
 
 If the [`kube-addons.sh`](../cluster/saltbase/salt/kube-addons/kube-addons.sh) script is not running, the kube-ui service will not be started. In this case, it can be started manually with:
 ```sh
