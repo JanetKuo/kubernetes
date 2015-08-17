@@ -532,10 +532,12 @@ func (r Request) finalURLTemplate() string {
 // Watch attempts to begin watching the requested location.
 // Returns a watch.Interface, or an error.
 func (r *Request) Watch() (watch.Interface, error) {
+	fmt.Println("Request Watch()")
 	if r.err != nil {
 		return nil, r.err
 	}
 	url := r.URL().String()
+	fmt.Printf("req url = %v\n", url)
 	req, err := http.NewRequest(r.verb, url, r.body)
 	if err != nil {
 		return nil, err
@@ -555,7 +557,8 @@ func (r *Request) Watch() (watch.Interface, error) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		if result := r.transformResponse(resp, req); result.err != nil {
-			return nil, result.err
+			// return nil, result.err
+			return nil, fmt.Errorf("transform response, result.err: %v", result.err)
 		}
 		return nil, fmt.Errorf("for request '%+v', got status: %v", url, resp.StatusCode)
 	}

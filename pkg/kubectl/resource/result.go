@@ -202,6 +202,7 @@ func (r *Result) Watch(resourceVersion string) (watch.Interface, error) {
 		}
 		return info[0].Watch(resourceVersion)
 	}
+	fmt.Println("result source Watchable.")
 	return w.Watch(resourceVersion)
 }
 

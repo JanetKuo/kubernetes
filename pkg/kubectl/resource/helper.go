@@ -17,6 +17,8 @@ limitations under the License.
 package resource
 
 import (
+	"fmt"
+
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/labels"
@@ -71,6 +73,7 @@ func (m *Helper) List(namespace, apiVersion string, selector labels.Selector) (r
 }
 
 func (m *Helper) Watch(namespace, resourceVersion, apiVersion string, labelSelector labels.Selector) (watch.Interface, error) {
+	fmt.Println("Helper Watch")
 	return m.RESTClient.Get().
 		Prefix("watch").
 		NamespaceIfScoped(namespace, m.NamespaceScoped).

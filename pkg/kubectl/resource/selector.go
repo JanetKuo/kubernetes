@@ -70,6 +70,7 @@ func (r *Selector) Visit(fn VisitorFunc) error {
 }
 
 func (r *Selector) Watch(resourceVersion string) (watch.Interface, error) {
+	fmt.Println("Selector Watch")
 	return NewHelper(r.Client, r.Mapping).Watch(r.Namespace, resourceVersion, r.ResourceMapping().APIVersion, r.Selector)
 }
 
