@@ -279,6 +279,7 @@ func (b *Builder) SelectAllParam(selectAll bool) *Builder {
 // received, the types provided will be retrieved from the server (and be comma delimited).
 // When two or more arguments are received, they must be a single type and resource name(s).
 // The allowEmptySelector permits to select all the resources (via Everything func).
+// TODO: add api group support here
 func (b *Builder) ResourceTypeOrNameArgs(allowEmptySelector bool, args ...string) *Builder {
 	// convert multiple resources to resource tuples, a,b,c d as a transform to a/d b/d c/d
 	if len(args) >= 2 {
