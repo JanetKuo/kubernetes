@@ -132,6 +132,7 @@ type TLSClientConfig struct {
 // and delete on these objects. An error is returned if the provided configuration
 // is not valid.
 func New(c *Config) (*Client, error) {
+	fmt.Printf("helper.go - New() - creates a k8s client for the given config\n")
 	config := *c
 	if err := SetKubernetesDefaults(&config); err != nil {
 		return nil, err
@@ -156,6 +157,7 @@ func New(c *Config) (*Client, error) {
 // (git hash) of the client with the server's build version. It returns an error
 // if it failed to contact the server or if the versions are not an exact match.
 func MatchesServerVersion(client *Client, c *Config) error {
+	fmt.Printf("helper.go - MatchesServerVersion()\n")
 	var err error
 	if client == nil {
 		client, err = New(c)
@@ -185,6 +187,8 @@ func MatchesServerVersion(client *Client, c *Config) error {
 // - If version is config default, and the server does not support it,
 //   return an error.
 func NegotiateVersion(client *Client, c *Config, version string, clientRegisteredVersions []string) (string, error) {
+	fmt.Printf("helper.go - NegotiateVersion()\n")
+	defer fmt.Printf("helper.go - NegotiateVersion() ...Finished\n")
 	var err error
 	if client == nil {
 		client, err = New(c)
@@ -240,6 +244,7 @@ func NegotiateVersion(client *Client, c *Config, version string, clientRegistere
 
 // NewOrDie creates a Kubernetes client and panics if the provided API version is not recognized.
 func NewOrDie(c *Config) *Client {
+	fmt.Printf("helper.go - NewOrDie()\n")
 	client, err := New(c)
 	if err != nil {
 		panic(err)
@@ -274,6 +279,7 @@ func InClusterConfig() (*Config, error) {
 
 // NewInCluster is a shortcut for calling InClusterConfig() and then New().
 func NewInCluster() (*Client, error) {
+	fmt.Printf("helper.go - NewInCluster()\n")
 	cc, err := InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -284,6 +290,7 @@ func NewInCluster() (*Client, error) {
 // SetKubernetesDefaults sets default values on the provided client config for accessing the
 // Kubernetes API or returns an error if any of the defaults are impossible or invalid.
 func SetKubernetesDefaults(config *Config) error {
+	fmt.Printf("helper.go - SetKubernetesDefaults()\n")
 	if config.Prefix == "" {
 		config.Prefix = "/api"
 	}
@@ -315,6 +322,7 @@ func SetKubernetesDefaults(config *Config) error {
 // A RESTClient created by this method is generic - it expects to operate on an API that follows
 // the Kubernetes conventions, but may not be the Kubernetes API.
 func RESTClientFor(config *Config) (*RESTClient, error) {
+	fmt.Printf("helper.go - RESTClientFor()\n")
 	if len(config.Version) == 0 {
 		return nil, fmt.Errorf("version is required when initializing a RESTClient")
 	}
@@ -468,6 +476,7 @@ func HTTPWrappersForConfig(config *Config, rt http.RoundTripper) (http.RoundTrip
 // to use with a Client at a given API version following the standard conventions for a
 // Kubernetes API.
 func DefaultServerURL(host, prefix, version string, defaultTLS bool) (*url.URL, error) {
+	fmt.Printf("helper.go - DefaultServerURL()\n")
 	if host == "" {
 		return nil, fmt.Errorf("host must be a URL or a host:port pair")
 	}
@@ -515,6 +524,7 @@ func DefaultServerURL(host, prefix, version string, defaultTLS bool) (*url.URL, 
 // Note: the Insecure flag is ignored when testing for this value, so MITM attacks are
 // still possible.
 func IsConfigTransportTLS(config Config) bool {
+	fmt.Printf("helper.go - IsConfigTransportTLS()\n")
 	// determination of TLS transport does not logically require a version to be specified
 	// modify the copy of the config we got to satisfy preconditions for defaultServerUrlFor
 	config.Version = defaultVersionFor(&config)
@@ -529,6 +539,7 @@ func IsConfigTransportTLS(config Config) bool {
 // defaultServerUrlFor is shared between IsConfigTransportTLS and RESTClientFor. It
 // requires Host and Version to be set prior to being called.
 func defaultServerUrlFor(config *Config) (*url.URL, error) {
+	fmt.Printf("helper.go - defaultServerUrlFor()\n")
 	// TODO: move the default to secure when the apiserver supports TLS by default
 	// config.Insecure is taken to mean "I want HTTPS but don't bother checking the certs against a CA."
 	hasCA := len(config.CAFile) != 0 || len(config.CAData) != 0

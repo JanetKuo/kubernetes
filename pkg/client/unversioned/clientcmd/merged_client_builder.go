@@ -17,6 +17,7 @@ limitations under the License.
 package clientcmd
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 
@@ -74,6 +75,7 @@ func (config DeferredLoadingClientConfig) RawConfig() (clientcmdapi.Config, erro
 
 // ClientConfig implements ClientConfig
 func (config DeferredLoadingClientConfig) ClientConfig() (*client.Config, error) {
+	fmt.Printf("merged_client_builder.go - ClientConfig()\n")
 	mergedClientConfig, err := config.createClientConfig()
 	if err != nil {
 		return nil, err

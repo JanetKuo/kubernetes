@@ -17,12 +17,16 @@ limitations under the License.
 package util
 
 import (
+	"fmt"
+
 	"k8s.io/kubernetes/pkg/api/registered"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 func NewClientCache(loader clientcmd.ClientConfig) *ClientCache {
+	fmt.Printf("clientcache.go - NewClientCache()\n")
+	defer fmt.Printf("clientcache.go - NewClientCache() ...Finished\n")
 	return &ClientCache{
 		clients: make(map[string]*client.Client),
 		configs: make(map[string]*client.Config),
@@ -43,6 +47,8 @@ type ClientCache struct {
 
 // ClientConfigForVersion returns the correct config for a server
 func (c *ClientCache) ClientConfigForVersion(version string) (*client.Config, error) {
+	fmt.Printf("clientcache.go - ClientConfigForVersion()\n")
+	defer fmt.Printf("clientcache.go - ClientConfigForVersion() ...Finished\n")
 	if c.defaultConfig == nil {
 		config, err := c.loader.ClientConfig()
 		if err != nil {
@@ -74,6 +80,8 @@ func (c *ClientCache) ClientConfigForVersion(version string) (*client.Config, er
 // ClientForVersion initializes or reuses a client for the specified version, or returns an
 // error if that is not possible
 func (c *ClientCache) ClientForVersion(version string) (*client.Client, error) {
+	fmt.Printf("clientcache.go - ClientForVersion()\n")
+	defer fmt.Printf("clientcache.go - ClientForVersion() ...Finished\n")
 	if client, ok := c.clients[version]; ok {
 		return client, nil
 	}

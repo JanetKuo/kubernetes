@@ -50,8 +50,8 @@ func (g GroupMetaMap) RegisterGroup(group string) (*GroupMeta, error) {
 	return g[group], nil
 }
 
-// Group returns the metadata of a group if the gruop is registered, otherwise
-// an erorr is returned.
+// Group returns the metadata of a group if the group is registered, otherwise
+// an error is returned.
 func (g GroupMetaMap) Group(group string) (*GroupMeta, error) {
 	groupMeta, found := g[group]
 	if !found {

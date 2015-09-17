@@ -17,6 +17,7 @@ limitations under the License.
 package unversioned
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -56,6 +57,8 @@ type RESTClient struct {
 // such as Get, Put, Post, and Delete on specified paths.  Codec controls encoding and
 // decoding of responses from the server.
 func NewRESTClient(baseURL *url.URL, apiVersion string, c runtime.Codec, maxQPS float32, maxBurst int) *RESTClient {
+	fmt.Printf("restclient.go - NewRESTClient(), baseURL = %s, apiVersion = %s\n", baseURL, apiVersion)
+	defer fmt.Printf("restclient.go - NewRESTClient() ...Finished\n")
 	base := *baseURL
 	if !strings.HasSuffix(base.Path, "/") {
 		base.Path += "/"
@@ -88,6 +91,7 @@ func NewRESTClient(baseURL *url.URL, apiVersion string, c runtime.Codec, maxQPS 
 // list, ok := resp.(*api.PodList)
 //
 func (c *RESTClient) Verb(verb string) *Request {
+	fmt.Printf("restclient.go - Verb(%s), client baseURL = %v, api version = %v\n", verb, c.baseURL, c.apiVersion)
 	if c.Throttle != nil {
 		c.Throttle.Accept()
 	}

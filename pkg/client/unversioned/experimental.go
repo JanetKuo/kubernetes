@@ -48,6 +48,7 @@ type ExperimentalClient struct {
 
 // ServerVersion retrieves and parses the server's version.
 func (c *ExperimentalClient) ServerVersion() (*version.Info, error) {
+	fmt.Printf("client.go - ServerVersion()\n")
 	body, err := c.Get().AbsPath("/version").Do().Raw()
 	if err != nil {
 		return nil, err
@@ -63,6 +64,7 @@ func (c *ExperimentalClient) ServerVersion() (*version.Info, error) {
 // ServerAPIVersions retrieves and parses the list of experimental API versions the
 // server supports.
 func (c *ExperimentalClient) ServerAPIVersions() (*api.APIVersions, error) {
+	fmt.Printf("experimental.go - ServerAPIVersions()\n")
 	body, err := c.Get().UnversionedPath("").Do().Raw()
 	if err != nil {
 		return nil, err
@@ -108,6 +110,7 @@ func NewExperimental(c *Config) (*ExperimentalClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("experimental.go - NewExperimental() - config.Version = %v\n", config.Version)
 	return &ExperimentalClient{client}, nil
 }
 
@@ -134,6 +137,7 @@ func setExperimentalDefaults(config *Config) error {
 		config.UserAgent = DefaultKubernetesUserAgent()
 	}
 	if config.Version == "" {
+		fmt.Printf("experimental.go - config.Version not set, set as g.Version = %v\n", g.Version)
 		config.Version = g.Version
 	}
 

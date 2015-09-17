@@ -109,6 +109,7 @@ func NewCmdGet(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 // RunGet implements the generic Get command
 // TODO: convert all direct flag accessors to a struct and pass that instead of cmd
 func RunGet(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string, options *GetOptions) error {
+	fmt.Printf("get.go - RunGet()\n")
 	selector := cmdutil.GetFlagString(cmd, "selector")
 	allNamespaces := cmdutil.GetFlagBool(cmd, "all-namespaces")
 	mapper, typer := f.Object()
@@ -128,6 +129,7 @@ func RunGet(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string
 	// handle watch separately since we cannot watch multiple resource types
 	isWatch, isWatchOnly := cmdutil.GetFlagBool(cmd, "watch"), cmdutil.GetFlagBool(cmd, "watch-only")
 	if isWatch || isWatchOnly {
+		fmt.Printf("get.go - Generaing resource builder...\n")
 		r := resource.NewBuilder(mapper, typer, f.ClientMapperForCommand()).
 			NamespaceParam(cmdNamespace).DefaultNamespace().AllNamespaces(allNamespaces).
 			FilenameParam(enforceNamespace, options.Filenames...).
@@ -136,6 +138,7 @@ func RunGet(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string
 			SingleResourceType().
 			Latest().
 			Do()
+		fmt.Printf("get.go - ...Finished\n")
 		err := r.Err()
 		if err != nil {
 			return err
@@ -182,6 +185,7 @@ func RunGet(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string
 		return nil
 	}
 
+	fmt.Printf("get.go - Generaing resource builder...\n")
 	b := resource.NewBuilder(mapper, typer, f.ClientMapperForCommand()).
 		NamespaceParam(cmdNamespace).DefaultNamespace().AllNamespaces(allNamespaces).
 		FilenameParam(enforceNamespace, options.Filenames...).
@@ -189,11 +193,13 @@ func RunGet(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string
 		ResourceTypeOrNameArgs(true, args...).
 		ContinueOnError().
 		Latest()
+	fmt.Printf("get.go - ...Finished\n")
 	printer, generic, err := cmdutil.PrinterForCommand(cmd)
 	if err != nil {
 		return err
 	}
 
+	fmt.Printf("get.go - generic = %v\n", generic)
 	if generic {
 		clientConfig, err := f.ClientConfig()
 		if err != nil {

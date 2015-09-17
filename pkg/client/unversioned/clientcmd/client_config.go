@@ -82,6 +82,7 @@ func (config DirectClientConfig) RawConfig() (clientcmdapi.Config, error) {
 
 // ClientConfig implements ClientConfig
 func (config DirectClientConfig) ClientConfig() (*client.Config, error) {
+	fmt.Printf("client_config.go - DirectClientConfig.ClientConfig()\n")
 	if err := config.ConfirmUsable(); err != nil {
 		return nil, err
 	}
@@ -311,6 +312,7 @@ func (inClusterClientConfig) RawConfig() (clientcmdapi.Config, error) {
 }
 
 func (inClusterClientConfig) ClientConfig() (*client.Config, error) {
+	fmt.Printf("client_config.go - inClusterClientConfig.ClientConfig()\n")
 	return client.InClusterConfig()
 }
 

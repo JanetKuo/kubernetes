@@ -73,6 +73,8 @@ func (r *Result) Err() error {
 // return different results.  If you wish to operate on the same set of resources
 // multiple times, use the Infos() method.
 func (r *Result) Visit(fn VisitorFunc) error {
+	fmt.Printf("result.go - Visit()\n")
+	defer fmt.Printf("result.go - Visit() ...Finished\n")
 	if r.err != nil {
 		return r.err
 	}

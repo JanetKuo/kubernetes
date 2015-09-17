@@ -96,6 +96,8 @@ type Factory struct {
 // if optionalClientConfig is nil, then flags will be bound to a new clientcmd.ClientConfig.
 // if optionalClientConfig is not nil, then this factory will make use of it.
 func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
+	fmt.Printf("factory.go - NewFactory()\n")
+	defer fmt.Printf("factory.go - NewFactory() ...Finished\n")
 	mapper := kubectl.ShortcutExpander{RESTMapper: api.RESTMapper}
 
 	flags := pflag.NewFlagSet("", pflag.ContinueOnError)
@@ -452,6 +454,8 @@ func (f *Factory) PrintObject(cmd *cobra.Command, obj runtime.Object, out io.Wri
 // PrinterForMapping returns a printer suitable for displaying the provided resource type.
 // Requires that printer flags have been added to cmd (see AddPrinterFlags).
 func (f *Factory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMapping, withNamespace bool) (kubectl.ResourcePrinter, error) {
+	fmt.Printf("factory.go - PrinterForMapping()\n")
+	defer fmt.Printf("factory.go - PrinterForMapping() ...Finished\n")
 	printer, ok, err := PrinterForCommand(cmd)
 	if err != nil {
 		return nil, err
@@ -488,6 +492,8 @@ func (f *Factory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMappin
 
 // ClientMapperForCommand returns a ClientMapper for the factory.
 func (f *Factory) ClientMapperForCommand() resource.ClientMapper {
+	fmt.Printf("factory.go - ClientMapperForCommand()\n")
+	defer fmt.Printf("factory.go - ClientMapperForCommand() ...Finished\n")
 	return resource.ClientMapperFunc(func(mapping *meta.RESTMapping) (resource.RESTClient, error) {
 		return f.RESTClient(mapping)
 	})

@@ -20,6 +20,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -98,6 +99,7 @@ func (s *ProxyServer) AddFlags(fs *pflag.FlagSet) {
 
 // Run runs the specified ProxyServer.  This should never exit (unless CleanupAndExit is set).
 func (s *ProxyServer) Run(_ []string) error {
+	fmt.Printf("server.go - Run()\n")
 	protocol := utiliptables.ProtocolIpv4
 	if s.BindAddress.To4() == nil {
 		protocol = utiliptables.ProtocolIpv6

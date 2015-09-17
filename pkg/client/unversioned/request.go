@@ -110,6 +110,7 @@ type Request struct {
 // NewRequest creates a new request helper object for accessing runtime.Objects on a server.
 func NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiVersion string,
 	codec runtime.Codec) *Request {
+	fmt.Printf("request.go - NewRequest()\n")
 	metrics.Register()
 	return &Request{
 		client:     client,
@@ -125,6 +126,7 @@ func NewRequest(client HTTPClient, verb string, baseURL *url.URL, apiVersion str
 // items will be placed before the optional Namespace, Resource, or Name sections.
 // Setting AbsPath will clear any previously set Prefix segments
 func (r *Request) Prefix(segments ...string) *Request {
+	fmt.Printf("request.go - Prefix()\n")
 	if r.err != nil {
 		return r
 	}
@@ -135,6 +137,7 @@ func (r *Request) Prefix(segments ...string) *Request {
 // Suffix appends segments to the end of the path. These items will be placed after the prefix and optional
 // Namespace, Resource, or Name sections.
 func (r *Request) Suffix(segments ...string) *Request {
+	fmt.Printf("request.go - Suffix()\n")
 	if r.err != nil {
 		return r
 	}
@@ -144,6 +147,7 @@ func (r *Request) Suffix(segments ...string) *Request {
 
 // Resource sets the resource to access (<resource>/[ns/<namespace>/]<name>)
 func (r *Request) Resource(resource string) *Request {
+	fmt.Printf("request.go - Resource()\n")
 	if r.err != nil {
 		return r
 	}
@@ -158,6 +162,7 @@ func (r *Request) Resource(resource string) *Request {
 // SubResource sets a sub-resource path which can be multiple segments segment after the resource
 // name but before the suffix.
 func (r *Request) SubResource(subresources ...string) *Request {
+	fmt.Printf("request.go - SubResource()\n")
 	if r.err != nil {
 		return r
 	}
@@ -172,6 +177,7 @@ func (r *Request) SubResource(subresources ...string) *Request {
 
 // Name sets the name of a resource to access (<resource>/[ns/<namespace>/]<name>)
 func (r *Request) Name(resourceName string) *Request {
+	fmt.Printf("request.go - Name()\n")
 	if r.err != nil {
 		return r
 	}
@@ -211,6 +217,7 @@ func (r *Request) NamespaceIfScoped(namespace string, scoped bool) *Request {
 
 // UnversionedPath strips the apiVersion from the baseURL before appending segments.
 func (r *Request) UnversionedPath(segments ...string) *Request {
+	fmt.Printf("request.go - UnversionedPath(%v)\n", segments)
 	if r.err != nil {
 		return r
 	}
@@ -223,6 +230,7 @@ func (r *Request) UnversionedPath(segments ...string) *Request {
 		}
 	}
 	r.path = path.Join(append([]string{upath}, segments...)...)
+	fmt.Printf("request.go - UnversionedPath(%v) - r.path = %v\n", segments, r.path)
 	return r
 }
 
@@ -476,16 +484,20 @@ func (r *Request) Body(obj interface{}) *Request {
 
 // URL returns the current working URL.
 func (r *Request) URL() *url.URL {
+	fmt.Printf("request.go - URL() - p = %v", r.path)
 	p := r.path
 	if r.namespaceSet && len(r.namespace) > 0 {
 		p = path.Join(p, "namespaces", r.namespace)
+		fmt.Printf(", p = %v", p)
 	}
 	if len(r.resource) != 0 {
 		p = path.Join(p, strings.ToLower(r.resource))
+		fmt.Printf(", p = %v", p)
 	}
 	// Join trims trailing slashes, so preserve r.path's trailing slash for backwards compat if nothing was changed
 	if len(r.resourceName) != 0 || len(r.subpath) != 0 || len(r.subresource) != 0 {
 		p = path.Join(p, r.resourceName, r.subresource, r.subpath)
+		fmt.Printf(", p = %v", p)
 	}
 
 	finalURL := &url.URL{}
@@ -493,6 +505,7 @@ func (r *Request) URL() *url.URL {
 		*finalURL = *r.baseURL
 	}
 	finalURL.Path = p
+	fmt.Printf(", finalURL = %v", finalURL)
 
 	query := url.Values{}
 	for key, values := range r.params {
@@ -500,12 +513,14 @@ func (r *Request) URL() *url.URL {
 			query.Add(key, value)
 		}
 	}
+	fmt.Printf(", r.params = %v", r.params)
 
 	// timeout is handled specially here.
 	if r.timeout != 0 {
 		query.Set("timeout", r.timeout.String())
 	}
 	finalURL.RawQuery = query.Encode()
+	fmt.Printf("\n")
 	return finalURL
 }
 
@@ -516,6 +531,7 @@ func (r *Request) URL() *url.URL {
 // selectors in use) will be lost.
 // TODO: preserve field selector keys
 func (r Request) finalURLTemplate() string {
+	fmt.Printf("request.go - finalURLTemplate()\n")
 	if len(r.resourceName) != 0 {
 		r.resourceName = "{name}"
 	}
@@ -534,6 +550,7 @@ func (r Request) finalURLTemplate() string {
 // Watch attempts to begin watching the requested location.
 // Returns a watch.Interface, or an error.
 func (r *Request) Watch() (watch.Interface, error) {
+	fmt.Printf("request.go - Watch()\n")
 	if r.err != nil {
 		return nil, r.err
 	}
@@ -569,6 +586,7 @@ func (r *Request) Watch() (watch.Interface, error) {
 // Any non-2xx http status code causes an error.  If we get a non-2xx code, we try to convert the body into an APIStatus object.
 // If we can, we return that as an error.  Otherwise, we create an error that lists the http status and the content of the response.
 func (r *Request) Stream() (io.ReadCloser, error) {
+	fmt.Printf("request.go - Stream()\n")
 	if r.err != nil {
 		return nil, r.err
 	}
@@ -617,6 +635,7 @@ func (r *Request) Stream() (io.ReadCloser, error) {
 // streams. The current implementation uses SPDY, but this could be replaced
 // with HTTP/2 once it's available, or something else.
 func (r *Request) Upgrade(config *Config, newRoundTripperFunc func(*tls.Config) httpstream.UpgradeRoundTripper) (httpstream.Connection, error) {
+	fmt.Printf("request.go - Upgrade()\n")
 	if r.err != nil {
 		return nil, r.err
 	}
@@ -653,6 +672,7 @@ func (r *Request) Upgrade(config *Config, newRoundTripperFunc func(*tls.Config) 
 // fn at most once. It will return an error if a problem occurred prior to connecting to the
 // server - the provided function is responsible for handling server errors.
 func (r *Request) request(fn func(*http.Request, *http.Response)) error {
+	fmt.Printf("request.go - request()\n")
 	if r.err != nil {
 		return r.err
 	}
@@ -716,6 +736,7 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 //  * If the server responds with a status: *errors.StatusError or *errors.UnexpectedObjectError
 //  * http.Client.Do errors are returned directly.
 func (r *Request) Do() Result {
+	fmt.Printf("request.go - Do()\n")
 	start := time.Now()
 	defer func() {
 		metrics.RequestLatency.WithLabelValues(r.verb, r.finalURLTemplate()).Observe(metrics.SinceInMicroseconds(start))
@@ -732,6 +753,7 @@ func (r *Request) Do() Result {
 
 // DoRaw executes the request but does not process the response body.
 func (r *Request) DoRaw() ([]byte, error) {
+	fmt.Printf("request.go - Do()\n")
 	start := time.Now()
 	defer func() {
 		metrics.RequestLatency.WithLabelValues(r.verb, r.finalURLTemplate()).Observe(metrics.SinceInMicroseconds(start))

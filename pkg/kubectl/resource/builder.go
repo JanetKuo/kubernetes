@@ -465,6 +465,7 @@ func (b *Builder) resourceTupleMappings() (map[string]*meta.RESTMapping, error) 
 }
 
 func (b *Builder) visitorResult() *Result {
+	fmt.Printf("builder.go - visitorResult()\n")
 	if len(b.errs) > 0 {
 		return &Result{err: errors.NewAggregate(b.errs)}
 	}
@@ -475,6 +476,7 @@ func (b *Builder) visitorResult() *Result {
 
 	// visit selectors
 	if b.selector != nil {
+		fmt.Printf("builder.go - visitorResult() - visit selectors\n")
 		if len(b.names) != 0 {
 			return &Result{err: fmt.Errorf("name cannot be provided when a selector is specified")}
 		}
@@ -492,6 +494,7 @@ func (b *Builder) visitorResult() *Result {
 				return &Result{err: fmt.Errorf("a selector may not be specified when path, URL, or stdin is provided as input")}
 			}
 		}
+		fmt.Printf("builder.go - visitorResult() - visit selectors - get resource mappings\n")
 		mappings, err := b.resourceMappings()
 		if err != nil {
 			return &Result{err: err}
@@ -499,7 +502,9 @@ func (b *Builder) visitorResult() *Result {
 
 		visitors := []Visitor{}
 		for _, mapping := range mappings {
+			fmt.Printf("builder.go - visitorResult() - visit selectors - get client for mapping\n")
 			client, err := b.mapper.ClientForMapping(mapping)
+			fmt.Printf("builder.go - visitorResult() - visit selectors - get client for mapping...Finished\n")
 			if err != nil {
 				return &Result{err: err}
 			}
@@ -517,6 +522,7 @@ func (b *Builder) visitorResult() *Result {
 
 	// visit items specified by resource and name
 	if len(b.resourceTuples) != 0 {
+		fmt.Printf("builder.go - visitorResult() - contains resource tuples\n")
 		isSingular := len(b.resourceTuples) == 1
 
 		if len(b.paths) != 0 {
@@ -580,6 +586,7 @@ func (b *Builder) visitorResult() *Result {
 
 	// visit items specified by name
 	if len(b.names) != 0 {
+		fmt.Printf("builder.go - visitorResult() - contains name\n")
 		isSingular := len(b.names) == 1
 
 		if len(b.paths) != 0 {
@@ -622,6 +629,7 @@ func (b *Builder) visitorResult() *Result {
 
 	// visit items specified by paths
 	if len(b.paths) != 0 {
+		fmt.Printf("builder.go - visitorResult() - contains path\n")
 		singular := !b.dir && !b.stream && len(b.paths) == 1
 		if len(b.resources) != 0 {
 			return &Result{singular: singular, err: fmt.Errorf("when paths, URLs, or stdin is provided as input, you may not specify resource arguments as well")}
@@ -649,6 +657,8 @@ func (b *Builder) visitorResult() *Result {
 		return &Result{singular: singular, visitor: visitors, sources: b.paths}
 	}
 
+	fmt.Printf("builder.go - visitorResult() - reach the end\n")
+
 	return &Result{err: fmt.Errorf("you must provide one or more resources by argument or filename (%s)", strings.Join(FileExtensions, "|"))}
 }
 
@@ -657,28 +667,35 @@ func (b *Builder) visitorResult() *Result {
 // inputs are consumed by the first execution - use Infos() or Object() on the Result to capture a list
 // for further iteration.
 func (b *Builder) Do() *Result {
+	fmt.Printf("builder.go - Do()\n")
+	fmt.Printf("builder.go - Do() - calling b.visitorResult()\n")
 	r := b.visitorResult()
 	if r.err != nil {
 		return r
 	}
 	if b.flatten {
+		fmt.Printf("builder.go - Do() - calling NewFlattenListVisitor()\n")
 		r.visitor = NewFlattenListVisitor(r.visitor, b.mapper)
 	}
 	helpers := []VisitorFunc{}
 	if b.defaultNamespace {
+		fmt.Printf("builder.go - Do() - calling SetNamespace()\n")
 		helpers = append(helpers, SetNamespace(b.namespace))
 	}
 	if b.requireNamespace {
+		fmt.Printf("builder.go - Do() - calling RequireNamespace()\n")
 		helpers = append(helpers, RequireNamespace(b.namespace))
 	}
 	helpers = append(helpers, FilterNamespace)
 	if b.requireObject {
 		helpers = append(helpers, RetrieveLazy)
 	}
+	fmt.Printf("builder.go - Do() - calling NewDecoratedVisitor()\n")
 	r.visitor = NewDecoratedVisitor(r.visitor, helpers...)
 	if b.continueOnError {
 		r.visitor = ContinueOnErrorVisitor{r.visitor}
 	}
+	fmt.Printf("result visitor type = %T\n", r.visitor)
 	return r
 }
 

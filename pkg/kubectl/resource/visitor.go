@@ -99,6 +99,8 @@ func NewInfo(client RESTClient, mapping *meta.RESTMapping, namespace, name strin
 
 // Visit implements Visitor
 func (i *Info) Visit(fn VisitorFunc) error {
+	fmt.Printf("visitor.go - Info Visit()\n")
+	defer fmt.Printf("visitor.go - Info Visit() ...Finished\n")
 	return fn(i, nil)
 }
 
@@ -222,6 +224,7 @@ type URLVisitor struct {
 }
 
 func (v *URLVisitor) Visit(fn VisitorFunc) error {
+	fmt.Printf("visitor.go - URLVisitor Visit()\n")
 	res, err := http.Get(v.URL.String())
 	if err != nil {
 		return err
@@ -263,11 +266,15 @@ func NewDecoratedVisitor(v Visitor, fn ...VisitorFunc) Visitor {
 
 // Visit implements Visitor
 func (v DecoratedVisitor) Visit(fn VisitorFunc) error {
+	fmt.Printf("visitor.go - DecoratedVisitor Visit()\n")
+	defer fmt.Printf("visitor.go - DecoratedVisitor Visit() ...Finished\n")
 	return v.visitor.Visit(func(info *Info, err error) error {
+		fmt.Printf("visitor.go - info.Client = %v\n", info.Client)
 		if err != nil {
 			return err
 		}
 		for i := range v.decorators {
+			fmt.Printf("visitor.go - v.decorators[i] = %v, type = %T\n", v.decorators[i], v.decorators[i])
 			if err := v.decorators[i](info, nil); err != nil {
 				return err
 			}
@@ -290,6 +297,8 @@ type ContinueOnErrorVisitor struct {
 // returned by the visitor directly may still result in some items
 // not being visited.
 func (v ContinueOnErrorVisitor) Visit(fn VisitorFunc) error {
+	fmt.Printf("visitor.go - ContinueOnErrorVisitor Visit()\n")
+	fmt.Printf("visitor.go - ContinueOnErrorVisitor Visit() ...Finished\n")
 	errs := []error{}
 	err := v.Visitor.Visit(func(info *Info, err error) error {
 		if err != nil {

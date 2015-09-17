@@ -194,6 +194,7 @@ func (s *CMServer) AddFlags(fs *pflag.FlagSet) {
 
 // Run runs the CMServer.  This should never exit.
 func (s *CMServer) Run(_ []string) error {
+	fmt.Printf("controllermanager.go - Run()\n")
 	if s.Kubeconfig == "" && s.Master == "" {
 		glog.Warningf("Neither --kubeconfig nor --master was specified.  Using default API client.  This might not work.")
 	}
