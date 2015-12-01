@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
@@ -102,7 +103,8 @@ const (
 // fault-tolerant way.
 type RollingUpdater struct {
 	// Client interface for creating and updating controllers
-	c client.Interface
+	c      client.Interface
+	client client.Client
 	// Namespace for resources
 	ns string
 	// scaleAndWait scales a controller and returns its updated state.
@@ -119,10 +121,11 @@ type RollingUpdater struct {
 }
 
 // NewRollingUpdater creates a RollingUpdater from a client.
-func NewRollingUpdater(namespace string, client client.Interface) *RollingUpdater {
+func NewRollingUpdater(namespace string, c client.Interface, client client.Client) *RollingUpdater {
 	updater := &RollingUpdater{
-		c:  client,
-		ns: namespace,
+		c:      c,
+		client: client,
+		ns:     namespace,
 	}
 	// Inject real implementations.
 	updater.scaleAndWait = updater.scaleAndWaitWithScaler
@@ -256,6 +259,27 @@ func (r *RollingUpdater) Update(config *RollingUpdaterConfig) error {
 
 	// Housekeeping and cleanup policy execution.
 	return r.cleanup(oldRc, newRc, config)
+}
+
+func (r *RollingUpdater) createDeploymentFromConfig(config *RollingUpdaterConfig) (*extensions.Deployment, error) {
+	deployment := extensions.Deployment{
+		ObjectMeta: api.ObjectMeta{
+			Name:   config.NewRc.Name,
+			Labels: config.NewRc.Labels,
+		},
+		Spec: extensions.DeploymentSpec{
+			Replicas: config.NewRc.Spec.Replicas,
+			Selector: config.NewRc.Spec.Selector,
+			Template: api.PodTemplateSpec{
+				ObjectMeta: api.ObjectMeta{
+					Labels: config.NewRc.Labels,
+				},
+				Spec: config.NewRc.Spec.Template.Spec,
+			},
+			UniqueLabelKey: "deployment.kubernetes.io/podTemplateHash",
+		},
+	}
+	return r.client.Deployments(deployment.Namespace).Create(&deployment)
 }
 
 // scaleUp scales up newRc to desired by whatever increment is possible given
