@@ -662,28 +662,27 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			mkpath := func(file string) string {
 				return "examples/guestbook-go/" + file
 			}
-			controllerJson := framework.ReadOrDie(mkpath("redis-master-controller.json"))
-			serviceJson := framework.ReadOrDie(mkpath("redis-master-service.json"))
+			controllerJson := framework.ReadOrDie(mkpath("guestbook-controller.json"))
+			serviceJson := framework.ReadOrDie(mkpath("guestbook-service.json"))
 
 			nsFlag := fmt.Sprintf("--namespace=%v", ns)
 			framework.RunKubectlOrDieInput(string(controllerJson[:]), "create", "-f", "-", nsFlag)
 			framework.RunKubectlOrDieInput(string(serviceJson[:]), "create", "-f", "-", nsFlag)
 
-			By("Waiting for Redis master to start.")
+			By("Waiting for Guestbook to start.")
 			waitFor(1)
 			// Pod
 			forEachPod(func(pod api.Pod) {
 				output := framework.RunKubectlOrDie("describe", "pod", pod.Name, nsFlag)
 				requiredStrings := [][]string{
-					{"Name:", "redis-master-"},
+					{"Name:", "guestbook-"},
 					{"Namespace:", ns},
 					{"Node:"},
-					{"Labels:", "app=redis"},
-					{"role=master"},
+					{"Labels:", "app=guestbook"},
 					{"Status:", "Running"},
 					{"IP:"},
-					{"Controllers:", "ReplicationController/redis-master"},
-					{"Image:", redisImage},
+					{"Controllers:", "ReplicationController/guestbook"},
+					{"Image:", guestbookImage},
 					{"cpu:", "BestEffort"},
 					{"State:", "Running"},
 				}
@@ -691,14 +690,13 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			})
 
 			// Rc
-			output := framework.RunKubectlOrDie("describe", "rc", "redis-master", nsFlag)
+			output := framework.RunKubectlOrDie("describe", "rc", "guestbook", nsFlag)
 			requiredStrings := [][]string{
-				{"Name:", "redis-master"},
+				{"Name:", "guestbook"},
 				{"Namespace:", ns},
-				{"Image(s):", redisImage},
-				{"Selector:", "app=redis,role=master"},
-				{"Labels:", "app=redis"},
-				{"role=master"},
+				{"Image(s):", guestbookImage},
+				{"Selector:", "app=guestbook"},
+				{"Labels:", "app=guestbook"},
 				{"Replicas:", "1 current", "1 desired"},
 				{"Pods Status:", "1 Running", "0 Waiting", "0 Succeeded", "0 Failed"},
 				// {"Events:"} would ordinarily go in the list
@@ -710,16 +708,15 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			checkOutput(output, requiredStrings)
 
 			// Service
-			output = framework.RunKubectlOrDie("describe", "service", "redis-master", nsFlag)
+			output = framework.RunKubectlOrDie("describe", "service", "guestbook", nsFlag)
 			requiredStrings = [][]string{
-				{"Name:", "redis-master"},
+				{"Name:", "guestbook"},
 				{"Namespace:", ns},
-				{"Labels:", "app=redis"},
-				{"role=master"},
-				{"Selector:", "app=redis", "role=master"},
+				{"Labels:", "app=guestbook"},
+				{"Selector:", "app=guestbook"},
 				{"Type:", "ClusterIP"},
 				{"IP:"},
-				{"Port:", "<unset>", "6379/TCP"},
+				{"Port:", "<unset>", "3000/TCP"},
 				{"Endpoints:"},
 				{"Session Affinity:", "None"}}
 			checkOutput(output, requiredStrings)
