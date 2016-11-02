@@ -126,7 +126,7 @@ var _ = framework.KubeDescribe("StatefulSet [Slow] [Feature:PetSet]", func() {
 			ExpectNoError(pst.checkMount(ps, "/data"))
 
 			By("Verifying statefulset provides a stable hostname for each pod")
-			ExpectNoError(pst.checkHostname(ps))
+			ExpectNoError(pst.checkHostname(ps, headlessSvcName))
 
 			cmd := "echo $(hostname) > /data/hostname; sync;"
 			By("Running " + cmd + " in all pets")
@@ -575,10 +575,10 @@ func (p *statefulSetTester) execInPets(ps *apps.StatefulSet, cmd string) error {
 	return nil
 }
 
-func (p *statefulSetTester) checkHostname(ps *apps.StatefulSet) error {
-	cmd := "printf $(hostname)"
+func (p *statefulSetTester) checkHostname(ps *apps.StatefulSet, svcName string) error {
 	podList := p.getPodList(ps)
 	for _, pet := range podList.Items {
+		cmd := "printf $(hostname)"
 		hostname, err := framework.RunHostCmd(pet.Namespace, pet.Name, cmd)
 		if err != nil {
 			return err
@@ -586,9 +586,24 @@ func (p *statefulSetTester) checkHostname(ps *apps.StatefulSet) error {
 		if hostname != pet.Name {
 			return fmt.Errorf("unexpected hostname (%s) and stateful pod name (%s) not equal", hostname, pet.Name)
 		}
+
+		cmd = fmt.Sprintf("\"nslookup %s.%s\"", pet.Name, svcName)
+		stdout, err := runCmdInBusybox(cmd)
+		if err != nil {
+			return err
+		}
+		if !strings.Contains(stdout, pet.Status.PodIP) || !strings.Contains(stdout, "kube-dns.kube-system.svc.cluster.local") {
+			return fmt.Errorf("unexpected hostname not linked correctly, pod IP: %s, nslookup: %s", pet.Status.PodIP, stdout)
+		}
 	}
 	return nil
 }
+
+// runCmdInBusybox starts a busybox pod and runs given cmd in it, the pod is deleted afterwards
+func runCmdInBusybox(cmd string) (string, error) {
+	return framework.RunKubectl("run", "-it", "--rm", "--image=busybox", "busybox", "--restart=Never", "--generator=run-pod/v1", "--", "/bin/sh", "-c", cmd)
+}
+
 func (p *statefulSetTester) saturate(ps *apps.StatefulSet) {
 	// TODO: Watch events and check that creation timestamps don't overlap
 	var i int32
