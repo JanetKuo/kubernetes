@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	clientset "k8s.io/client-go/kubernetes"
 	utilversion "k8s.io/kubernetes/pkg/util/version"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -46,12 +47,11 @@ const (
 var serverWebhookVersion = utilversion.MustParseSemantic("v1.8.0")
 
 var _ = SIGDescribe("AdmissionWebhook", func() {
+	var ns string
+	var c clientset.Interface
 	f := framework.NewDefaultFramework("webhook")
-	framework.AddCleanupAction(func() {
-		cleanWebhookTest(f)
-	})
 
-	It("Should be able to deny pod creation", func() {
+	BeforeEach(func() {
 		// Make sure the relevant provider supports admission webhook
 		framework.SkipUnlessServerVersionGTE(serverWebhookVersion, f.ClientSet.Discovery())
 		framework.SkipUnlessProviderIs("gce", "gke", "local")
@@ -61,10 +61,14 @@ var _ = SIGDescribe("AdmissionWebhook", func() {
 			framework.Skipf("dynamic configuration of webhooks requires the alpha admissionregistration.k8s.io group to be enabled")
 		}
 
+		c = f.ClientSet
+		ns = f.Namespace.Name
+	})
+
+	It("Should be able to deny pod creation", func() {
 		By("Setting up server cert")
-		namespaceName := f.Namespace.Name
-		context := setupServerCert(namespaceName, serviceName)
-		createAuthReaderRoleBinding(f, namespaceName)
+		context := setupServerCert(ns, serviceName)
+		createAuthReaderRoleBinding(f, ns)
 		// Note that in 1.9 we will have backwards incompatible change to
 		// admission webhooks, so the image will be updated to 1.9 sometime in
 		// the development 1.9 cycle.
