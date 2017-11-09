@@ -54,7 +54,7 @@ var _ = SIGDescribe("AdmissionWebhook", func() {
 	It("Should be able to deny pod creation", func() {
 		// Make sure the relevant provider supports admission webhook
 		framework.SkipUnlessServerVersionGTE(serverWebhookVersion, f.ClientSet.Discovery())
-		framework.SkipUnlessProviderIs("gce", "gke")
+		framework.SkipUnlessProviderIs("gce", "gke", "local")
 
 		_, err := f.ClientSet.AdmissionregistrationV1alpha1().ExternalAdmissionHookConfigurations().List(metav1.ListOptions{})
 		if errors.IsNotFound(err) {
@@ -71,6 +71,7 @@ var _ = SIGDescribe("AdmissionWebhook", func() {
 		deployWebhookAndService(f, "gcr.io/kubernetes-e2e-test-images/k8s-sample-admission-webhook-amd64:1.8v1", context)
 		registerWebhook(f, context)
 		testWebhook(f)
+		cleanWebhookTest(f)
 	})
 })
 
